@@ -1,39 +1,86 @@
 version: '3'
 
 services:
-  web:
-    restart: always
-    build: ./web
+  app:
+    build:
+      context: .
+      dockerfile: ./docker_compose/app/Dockerfile
+    image: remote-ph-app
+    container_name: remote-ph-app
+    restart: unless-stopped
+    tty: true
     expose:
       - "8000"
-    links:
-      - redis:redis
     volumes:
       - ./web:/var/www/app
-    env_file: .env
+    env_file:
+      - ./docker_compose/app/.env
+      - ./docker_compose/mongodb/.env
+      - ./docker_compose/postgres/.env
     environment:
       DEBUG: 'true'
     command: gunicorn --reload wsgi:app -w 1 -b 0.0.0.0:8000
-    # command: python manage.py runserver 0.0.0.0:8000
+    networks:
+      - remote-ph-network
 
   nginx:
-    restart: always
-    build: ./nginx/
+    image: nginx:alpine
+    container_name: remote-ph-nginx
+    restart: unless-stopped
+    tty: true
     ports:
       - "80:80"
     volumes:
-      # - /www/static
-      - ./web/static:/var/www/app/static
-    links:
-      - web:web
+      - ./:/var/www
+      - ./docker_compose/nginx/conf.d/:/etc/nginx/conf.d/
+    env_file:
+      - ./docker_compose/nginx/.env
+    environment:
+      SERVICE_NAME: mongodb
+      SERVICE_TAGS: dev
+    networks:
+      - remote-ph-network
 
-  redis:
-    restart: always
-    image: redis:latest
+  postgres:
+    build: ./docker_compose/postgres/
+    image: remote-ph-postgres
+    container_name: remote-ph-postgres
+    restart: unless-stopped
+    tty: true
     ports:
-      - "6379:6379"
+      - "5432:5432"
     volumes:
-      - redisdata:/data
+      - pgdata:/var/lib/postgresql/data/
+    env_file:
+      - ./docker_compose/postgres/.env
+    environment:
+      SERVICE_NAME: postgres
+      SERVICE_TAGS: dev
+    networks:
+      - remote-ph-network
+
+  mongodb:
+    image: mongo:4.0.8
+    container_name: remote-ph-mongo
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodbdata:/data/db
+    env_file:
+      - ./docker_compose/mongodb/.env
+    command: mongod --auth
+    networks:
+      - remote-ph-network
+
+
+networks:
+  remote-ph-network:
+    driver: bridge
 
 volumes:
-  redisdata:
+  pgdata:
+    driver: local
+  mongodbdata:
+    driver: local
