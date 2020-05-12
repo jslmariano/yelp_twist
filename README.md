@@ -21,16 +21,16 @@ Requirements:
 ## Local Dev Instructions
 
 1. Install docker from this tutorial https://docs.docker.com/install/
-1. Extract the files on your workspace - `/<path_to_workspace>/dockerize_flask_modular_restplus`
-1. Go to your project directory - `/<path_to_workspace>/dockerize_flask_modular_restplus`
+1. Extract the files on your workspace - `/<path_to_workspace>/remote_ph_exam_python`
+1. Go to your project directory - `/<path_to_workspace>/remote_ph_exam_python`
 1. Build images - `docker-compose build` (This may take a while for 1st time, go grab your coffee :) )
 1. Start services - `docker-compose up`
 1. Browse your applciation on - `localhost`
-1. Always run mmigration for new tables ` docker exec -it dockerize_flask_modular_restplus_web_1 /usr/local/bin/python manage.py migrate`
-1. Test scripts are available, `docker exec -it dockerize_flask_modular_restplus_web_1 /usr/local/bin/python manage.py test`
+1. Always run migration for new tables ` docker exec -it remote-ph-app /usr/local/bin/python manage.py migrate`
+1. Test scripts are available, `docker exec -it remote-ph-app /usr/local/bin/python manage.py test`
 
 ## Restful API
-1. Go to https://documenter.getpostman.com/view/6907051/SzezdXyz?version=latest and Click "Run in postman"
+1. Go to https://documenter.getpostman.com/view/6907051/Szmh2wHN?version=latest and Click "Run in postman"
 1. If your postman opens choose "Flask Modular RestPlus | Local" as environment to your top right corner
 1. If the 2 above does not work, proceed below to the manual
 1. Download and install postman here https://www.postman.com/downloads/
@@ -87,13 +87,9 @@ with body
 - Local host url - `localhost`
 
 
-### Idea came from ###
-https://medium.freecodecamp.org/structuring-a-flask-restplus-web-service-for-production-builds-c2ec676de563
-
-
 ### Contributing
 If you want to contribute to this flask modular restplus, clone the repository and just start making pull requests.
 
 ```
-https://github.com/jslmariano/dockerize_flask_modular_restplus.git
+https://github.com/jslmariano/remote_ph_exam_python.git
 ```

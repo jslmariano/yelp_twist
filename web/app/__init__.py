@@ -12,9 +12,9 @@ from .redis.controller.queue_controller import api as queue_pipe_ns
 blueprint = Blueprint('api', __name__)
 
 api = Api(blueprint,
-          title='FLASK RESTPLUS API BOILER-PLATE WITH JWT',
+          title='FLASK API, MONGODB, POSTGRESQL, DOCKER COMPOSE',
           version='1.0',
-          description='a boilerplate for flask restplus web service'
+          description='An api made from flask with mongodb and postgresql as data, build from docker compose'
           )
 
 api.add_namespace(user_ns, path='/user')
