@@ -9,9 +9,12 @@ from .main.controller.auth_controller import api as auth_ns
 from .workorder.controller.receiver_controller import api as wo_receiver_ns
 from .redis.controller.queue_controller import api as queue_pipe_ns
 
-blueprint = Blueprint('api', __name__)
+# APIS
+from .customers.controller.customer_controller import api as customer_ns
 
-api = Api(blueprint,
+blueprint_api = Blueprint('api', __name__)
+
+api = Api(blueprint_api,
           title='FLASK API, MONGODB, POSTGRESQL, DOCKER COMPOSE',
           version='1.0',
           description='An api made from flask with mongodb and postgresql as data, build from docker compose'
@@ -21,3 +24,4 @@ api.add_namespace(user_ns, path='/user')
 api.add_namespace(auth_ns)
 api.add_namespace(wo_receiver_ns, path='/workorder/receiver')
 api.add_namespace(queue_pipe_ns, path='/redis/queue')
+api.add_namespace(customer_ns, path='/customer')
