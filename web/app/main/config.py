@@ -22,6 +22,20 @@ class DevelopmentConfig(Config):
     BASIC_AUTH_USERNAME = 'sample'
     BASIC_AUTH_PASSWORD = 'pass'
     BASIC_AUTH_REALM = 'Basic Auth Required'
+    MONGODB_USERNAME = os.environ['MONGODB_USERNAME']
+    MONGODB_PASSWORD = os.environ['MONGODB_PASSWORD']
+    MONGODB_HOSTNAME = os.environ['MONGODB_HOSTNAME']
+    MONGODB_DATABASE = os.environ['MONGODB_DATABASE']
+    MONGO_URI = ('mongodb://' + MONGODB_USERNAME + ':' +
+                MONGODB_PASSWORD + '@' + MONGODB_HOSTNAME + ':27017/' +
+                MONGODB_DATABASE + '?authSource=admin')
+    MONGODB_SETTINGS = {
+        'db' : os.environ['MONGODB_DATABASE'],
+        'host'  : ('mongodb://' + os.environ['MONGODB_USERNAME'] + ':' +
+                    os.environ['MONGODB_PASSWORD'] + '@' +
+                    os.environ['MONGODB_HOSTNAME'] + ':27017/' +
+                    os.environ['MONGODB_DATABASE'] + '?authSource=admin'),
+    }
 
 
 class TestingConfig(Config):

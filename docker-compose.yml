@@ -74,6 +74,17 @@ services:
     networks:
       - remote-ph-network
 
+  redis:
+    image: redis:latest
+    container_name: remote-ph-redis
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    networks:
+      - remote-ph-network
 
 networks:
   remote-ph-network:
@@ -83,4 +94,6 @@ volumes:
   pgdata:
     driver: local
   mongodbdata:
+    driver: local
+  redisdata:
     driver: local
