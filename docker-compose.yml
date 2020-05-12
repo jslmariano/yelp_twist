@@ -10,7 +10,7 @@ services:
     restart: unless-stopped
     tty: true
     expose:
-      - "8000"
+      - "8080"
     volumes:
       - ./web:/var/www/app
     env_file:
@@ -19,7 +19,8 @@ services:
       - ./docker_compose/postgres/.env
     environment:
       DEBUG: 'true'
-    command: gunicorn --reload wsgi:app -w 1 -b 0.0.0.0:8000
+      APP_NAME: 'FlaskApp'
+    # command: gunicorn --reload wsgi:app -w 1 -b 0.0.0.0:8080
     networks:
       - remote-ph-network
 
