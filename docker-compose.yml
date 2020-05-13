@@ -3,8 +3,8 @@ version: '3'
 services:
   app:
     build:
-      context: .
-      dockerfile: ./docker_compose/app/Dockerfile
+      context: ./web
+      dockerfile: ../docker_compose/app/Dockerfile
     image: remote-ph-app
     container_name: remote-ph-app
     restart: unless-stopped
@@ -21,6 +21,26 @@ services:
       DEBUG: 'true'
       APP_NAME: 'FlaskApp'
     # command: gunicorn --reload wsgi:app -w 1 -b 0.0.0.0:8080
+    networks:
+      - remote-ph-network
+
+  vue_ui:
+    build:
+      context: ./vue_ui
+      dockerfile: ../docker_compose/vue_ui/Dockerfile
+    image: remote-ph-vue_ui
+    container_name:  remote-ph-vue_ui
+    restart: unless-stopped
+    tty: true
+    ports:
+        - "8000:8000"
+        - "5000:5000"
+    stdin_open: true
+    #  mount the volumes so we can change code and hot reload
+    # volumes:
+    #     - './vue_ui:/vue_ui'
+    #  port allows the host machine to link to container
+    #  8000 for vue ui, 5000 for our vue app
     networks:
       - remote-ph-network
 

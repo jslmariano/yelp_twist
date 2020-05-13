@@ -7,8 +7,7 @@ from app import blueprint_api
 from app.main import create_app, db
 
 app = create_app(os.getenv('BOILERPLATE_ENV') or 'dev')
-# app.register_blueprint(blueprint_api, url_prefix="/flask/api/v1")
-app.register_blueprint(blueprint_api)
+app.register_blueprint(blueprint_api, url_prefix="/api/v1")
 
 app.app_context().push()
 

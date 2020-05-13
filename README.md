@@ -26,7 +26,7 @@ Requirements:
 1. Build images - `docker-compose build` (This may take a while for 1st time, go grab your coffee :) )
 1. Start services - `docker-compose up`
 1. Browse your applciation on - `localhost`
-1. Always run migration for new tables ` docker exec -it remote-ph-app /usr/local/bin/python manage.py migrate`
+1. Always run migration for new tables ` docker exec -it remote-ph-app /usr/local/bin/python manage.py db migrate`
 1. Test scripts are available, `docker exec -it remote-ph-app /usr/local/bin/python manage.py test`
 
 ## Restful API
