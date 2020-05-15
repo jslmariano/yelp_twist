@@ -1,27 +1,5 @@
-// Initalize mopdule
-var app = angular.module('myApp', []);
-
-
-/**
- Angular app dierctive for attribute on-error whereas if the src attribute fail
- to load, then attribute src is replcaed by on-error's attribute vakue
-*/
-app.directive('onError', function()
-{
-    return {
-        restrict: 'A',
-        link: function(scope, element, attr)
-        {
-            element.on('error', function()
-            {
-                element.attr('src', attr.onError);
-            })
-        }
-    }
-})
-
 // Initalize Controller
-app.controller('MainController', function($scope, $http, $window)
+app.controller('MainController', function($scope, $http, $window, $q, request_workers)
 {
     // COMMON
     $scope.search_params = {};
@@ -41,6 +19,47 @@ app.controller('MainController', function($scope, $http, $window)
     $scope.statuses.search = 0
     $scope.statuses.search_display = "Search"
     $scope.statuses.reviews = 0
+
+    /**
+     * Creates a toast option.
+     */
+    // $scope.create_toast_option = function() {
+    //     toastr.options = {
+    //       "closeButton": true,
+    //       "debug": false,
+    //       "newestOnTop": false,
+    //       "progressBar": false,
+    //       "positionClass": "toast-bottom-right",
+    //       "preventDuplicates": false,
+    //       "onclick": null,
+    //       "showDuration": "300",
+    //       "hideDuration": "1000",
+    //       "timeOut": "5000",
+    //       "extendedTimeOut": "1000",
+    //       "showEasing": "swing",
+    //       "hideEasing": "linear",
+    //       "showMethod": "fadeIn",
+    //       "hideMethod": "fadeOut"
+    //     }
+    // }
+
+    /**
+     * Shows the warning.
+     *
+     * @param      {<string>}  message  The message
+     */
+    $scope.show_warning = function(message) {
+        toastr["warning"](message, "Mehhh...")
+    }
+
+    /**
+     * Shows the error.
+     *
+     * @param      {<string>}  message  The message
+     */
+    $scope.show_error = function(message) {
+        toastr["error"](message, "Oh My!")
+    }
 
     /**
      * Sets the search status.
@@ -95,14 +114,25 @@ app.controller('MainController', function($scope, $http, $window)
                 console.log(response);
                 $scope.businesses = [];
                 $scope.set_search_status(0)
+                $scope.show_error("Something gone wrong can you please try again?")
             });
     }
+
+    /**
+     * Initializes the request workers.
+     */
+    $scope.init_request_workers = function() {
+        $scope.request_workers = request_workers;
+    };
 
     /**
      * Fetch business reviews
      */
     $scope.fetch_reviews = function($event)
     {
+        // Clear reviews
+        $scope.business_reviews = [];
+
         // Do not proceed while soul searching
         if ($scope.statuses.search == $scope.STATUS_LOADING) {
             return false;
@@ -112,7 +142,6 @@ app.controller('MainController', function($scope, $http, $window)
         review_count = $event.currentTarget.dataset.review_count
         if (parseInt(review_count) <= 0)
         {
-            $scope.business_reviews = [];
             return false;
         }
 
@@ -135,25 +164,28 @@ app.controller('MainController', function($scope, $http, $window)
             }
         }
 
+        // Init request workers
+        $scope.init_request_workers();
+        // Cancel any old request
+        $scope.request_workers.cancel_request('fetch_reviews');
         $scope.set_reviews_status(1);
-        $http(
-            {
-                // http://localhost/api/v1/yelp/business/reviews?alias=spiral-pasay-2
-                method: "GET",
-                url: mode_api,
-                params: business_datas
-            })
-            .then(function success(response)
-            {
-                console.log(response);
+        // Create new requests
+        request_fetch_reviews = $scope.request_workers.create_request('fetch_reviews', mode_api, business_datas);
+        request_fetch_reviews.promise.then(
+            function(response){
+                console.log("finished", response);
                 $scope.business_reviews = response.data.business_reviews.reviews;
                 $scope.set_reviews_status(0);
-            }, function error(response)
-            {
-                console.log(response);
-                $scope.business_reviews = [];
-                $scope.set_reviews_status(0);
-            });
+            },
+            function(reason){
+                console.log("abort", reason);
+            }
+        ).catch(function(response){
+            console.log("catch", response);
+            $scope.set_reviews_status(0);
+            $scope.show_error("Something gone wrong can you please try again?")
+        });
+
     }
 
     /**
