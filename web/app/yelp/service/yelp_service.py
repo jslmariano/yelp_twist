@@ -3,6 +3,7 @@ import io
 import os
 import json
 import requests
+import time
 from urllib.parse import urlencode
 from requests.exceptions import RequestException
 from contextlib import closing
@@ -13,11 +14,15 @@ from bs4 import BeautifulSoup
 # Models
 from ..service.google_vision_service import batch_detect_faces_uri
 
+# Redis cache
+from app.redis.service.redis_cache_service import RedisCache
+
+REDIS_CACHE_SECONDS = 60
+
 # YELP FUSION APIS
 YELP_DOMAIN = "https://api.yelp.com"
 YELP_API_BUSINESS_SEARCH = "v3/businesses/search"
 YELP_API_BUSINESS_REVIEWS = "v3/businesses/{}/reviews"
-
 
 def business_search(term):
     """
@@ -40,6 +45,16 @@ def business_search(term):
     if term is not None:
         filters['term'] = str(term)
 
+    # Manual redis caching
+    # TODO: If possible to convert to decorator
+    cache_key = "business:001:business.data.{}".format(str(term))
+    redis_cache = RedisCache()
+    cached_data = redis_cache.get_cache(cache_key)
+    # Return cached data
+    if cached_data is not None:
+        return cached_data
+
+
     yelp_credential = get_yelp_credential(
         os.path.abspath(os.getenv('YELP_CREDENTIALS', None))
     )
@@ -50,8 +65,12 @@ def business_search(term):
     }
     url = get_formated_api(YELP_API_BUSINESS_SEARCH, filters)
     response = requests.request("GET", url,headers=headers, data = payload)
-    return response.json()
 
+
+    # Save return data to cache
+    return_data = response.json()
+    redis_cache.save_cache(cache_key, return_data, REDIS_CACHE_SECONDS)
+    return return_data
 
 def business_reviews(business_alias):
     """
@@ -176,7 +195,6 @@ def scrape_reviews_api(business_id, start = 0):
 
     return response_dict
 
-
 def scrape_reviews_page(business_alias):
     """
     Scrape Reviews Page
@@ -190,12 +208,23 @@ def scrape_reviews_page(business_alias):
     :rtype:     { list }
     """
 
+
+    # Manual redis caching
+    # TODO: If possible to convert to decorator
+    cache_key = "business:001:reviews.data.{}".format(business_alias)
+    redis_cache = RedisCache()
+    cached_data = redis_cache.get_cache(cache_key)
+    # Return cached data
+    if cached_data is not None:
+        return cached_data
+
     payload = {}
     headers = {
         'X-Requested-By-React': 'true',
     }
 
     url = "https://www.yelp.com/biz/{}".format(business_alias)
+    # url = "https://www.google.com"
     print("requesting: {}".format(url))
     content = simple_get(url)
 
@@ -250,7 +279,11 @@ def scrape_reviews_page(business_alias):
             if res:
                 res['images_annotation'] = images_annotation
 
-    return {'reviews' : review_lists, 'review_lists' : user_image_urls}
+
+    # Save return data to cache
+    return_data = {'reviews' : review_lists, 'review_lists' : user_image_urls}
+    redis_cache.save_cache(cache_key, return_data, REDIS_CACHE_SECONDS)
+    return return_data
 
 
 def split_to_quota(user_image_urls):
@@ -324,6 +357,7 @@ def simple_get(url):
     text content, otherwise return None.
     """
     try:
+        os.environ['NO_PROXY'] = 'yelp.com'
         with closing(requests.get(url, stream=True)) as resp:
             if is_good_response(resp):
                 return resp.content
