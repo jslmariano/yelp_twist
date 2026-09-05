@@ -122,3 +122,6 @@ If you want to contribute to this flask modular restplus, clone the repository a
 ```
 https://github.com/jslmariano/yelp_twist.git
 ```
+
+
+<!-- Security scan triggered at 2026-09-05 07:31:21 -->
